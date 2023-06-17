@@ -5,9 +5,13 @@
 package it.polito.tdp.PremierLeague;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import it.polito.tdp.PremierLeague.model.Model;
+import it.polito.tdp.PremierLeague.model.SimResult;
+import it.polito.tdp.PremierLeague.model.Team;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -35,7 +39,7 @@ public class FXMLController {
     private Button btnSimula; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbSquadra"
-    private ComboBox<?> cmbSquadra; // Value injected by FXMLLoader
+    private ComboBox<Team> cmbSquadra; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtN"
     private TextField txtN; // Value injected by FXMLLoader
@@ -48,17 +52,68 @@ public class FXMLController {
 
     @FXML
     void doClassifica(ActionEvent event) {
-
+    	Team t = this.cmbSquadra.getValue();
+    	if(t == null) {
+    		this.txtResult.setText("Inserire una squadra nella boxTeam!");
+    		return;
+    	}
+    	List<Team>squadreBattute = new ArrayList<>(model.getSquadreBattute(t));
+    	List<Team>squadreNonBattute = new ArrayList<>(model.getSquadreNonBattute(t));
+    	String s = "Squadre con cui "+t.getName()+" ("+t.getPuntiFineAnno()+") ha perso :\n";
+    	for(Team x : squadreNonBattute) {
+    		s += x.getName()+" ("+(x.getPuntiFineAnno()-t.getPuntiFineAnno())+")\n";
+    	}
+    	s += "Squadre con cui "+t.getName()+" ha vinto :\n";
+    	for(Team x : squadreBattute) {
+    		s += x.getName()+" ("+(t.getPuntiFineAnno()-x.getPuntiFineAnno())+")\n";
+    	}
+    	this.txtResult.setText(s);
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
-
+    	String s = model.creaGrafo();
+    	this.txtResult.setText(s);
+    	
+    	for(Team x : model.getAllTeams()) {
+    		this.cmbSquadra.getItems().add(x);
+    	}
+    	
     }
 
     @FXML
     void doSimula(ActionEvent event) {
-
+    	String n = this.txtN.getText();
+    	String x = this.txtX.getText();
+    	Integer xNUM;
+    	Integer nNUM;
+    	if(n == "") {
+    		this.txtResult.setText("Campo n vuoto");
+    		return;
+    	}
+    	if(x == "") {
+    		this.txtResult.setText("Campo x vuoto");
+    		return;
+    	}
+    	
+    	try {
+    		xNUM = Integer.parseInt(x);
+    	}catch(NumberFormatException e) {
+    		this.txtResult.setText("Inserire un numero nel campo x");
+    		return;
+    	}
+    	
+    	try {
+    		nNUM = Integer.parseInt(n);
+    	}catch(NumberFormatException e) {
+    		this.txtResult.setText("Inserire un numero nel campo x");
+    		return;
+    	}
+    	SimResult s = model.simula(nNUM, xNUM);
+    	this.txtResult.setText("Simulazione eseguita correttamente:\nmediaPerPartita = "+s.getMediaRepPerMatch()+", nGiorniCritici = "+s.getnGiorniCritici());
+    	
+    	
+    	
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete

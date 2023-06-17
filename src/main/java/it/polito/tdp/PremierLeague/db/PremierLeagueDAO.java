@@ -37,7 +37,7 @@ public class PremierLeagueDAO {
 	}
 	
 	public List<Team> listAllTeams(){
-		String sql = "SELECT * FROM Teams";
+		String sql = "SELECT DISTINCT* FROM Teams";
 		List<Team> result = new ArrayList<Team>();
 		Connection conn = DBConnect.getConnection();
 
@@ -84,9 +84,9 @@ public class PremierLeagueDAO {
 	}
 	
 	public List<Match> listAllMatches(){
-		String sql = "SELECT m.MatchID, m.TeamHomeID, m.TeamAwayID, m.teamHomeFormation, m.teamAwayFormation, m.resultOfTeamHome, m.date, t1.Name, t2.Name   "
+		String sql = "SELECT m.*, m.TeamHomeID, m.TeamAwayID, m.teamHomeFormation, m.teamAwayFormation, m.resultOfTeamHome, m.date, t1.Name, t2.Name   "
 				+ "FROM Matches m, Teams t1, Teams t2 "
-				+ "WHERE m.TeamHomeID = t1.TeamID AND m.TeamAwayID = t2.TeamID";
+				+ "WHERE m.TeamHomeID = t1.TeamID AND m.TeamAwayID = t2.TeamID ";
 		List<Match> result = new ArrayList<Match>();
 		Connection conn = DBConnect.getConnection();
 
@@ -94,8 +94,6 @@ public class PremierLeagueDAO {
 			PreparedStatement st = conn.prepareStatement(sql);
 			ResultSet res = st.executeQuery();
 			while (res.next()) {
-
-				
 				Match match = new Match(res.getInt("m.MatchID"), res.getInt("m.TeamHomeID"), res.getInt("m.TeamAwayID"), res.getInt("m.teamHomeFormation"), 
 							res.getInt("m.teamAwayFormation"),res.getInt("m.resultOfTeamHome"), res.getTimestamp("m.date").toLocalDateTime(), res.getString("t1.Name"),res.getString("t2.Name"));
 				
@@ -105,6 +103,100 @@ public class PremierLeagueDAO {
 			}
 			conn.close();
 			return result;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public Integer getAllPuntiVittorieInCasa(Team t){
+		String sql = "SELECT COUNT(*)AS puntiV "
+				+ "FROM matches m "
+				+ "WHERE m.TeamHomeID = ? "
+				+ "AND m.ResultOfTeamHome = 1 ";
+		int punti = 0;
+		Connection conn = DBConnect.getConnection();
+
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, t.getTeamID());
+			ResultSet res = st.executeQuery();
+			if (res.first()) {
+				punti = 3*res.getInt("puntiV");
+			}
+			conn.close();
+			return punti;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public Integer getAllPuntiVittorieInTrasferta(Team t){
+		String sql = "SELECT COUNT(*)AS puntiV "
+				+ "FROM matches m "
+				+ "WHERE  m.TeamAwayID = ? "
+				+ "AND m.ResultOfTeamHome = -1 ";
+		int punti = 0;
+		Connection conn = DBConnect.getConnection();
+
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, t.getTeamID());
+			ResultSet res = st.executeQuery();
+			if (res.first()) {
+				punti = 3*res.getInt("puntiV");
+			}
+			conn.close();
+			return punti;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	public Integer getAllPuntiPareggiInCasa(Team t){
+		String sql = "SELECT COUNT(*)AS puntiP "
+				+ "FROM matches m "
+				+ "WHERE m.TeamHomeID = ? "
+				+ "AND m.ResultOfTeamHome = 0 ";
+		int punti = 0;
+		Connection conn = DBConnect.getConnection();
+
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, t.getTeamID());
+			ResultSet res = st.executeQuery();
+			if (res.first()) {
+				punti = res.getInt("puntiP");
+			}
+			conn.close();
+			return punti;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	public Integer getAllPuntiPareggiInTrasferta(Team t){
+		String sql = "SELECT COUNT(*)AS puntiP "
+				+ "FROM matches m "
+				+ "WHERE m.TeamAwayID = ? "
+				+ "AND m.ResultOfTeamHome = 0 ";
+		int punti = 0;
+		Connection conn = DBConnect.getConnection();
+
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, t.getTeamID());
+			ResultSet res = st.executeQuery();
+			if (res.first()) {
+				punti = res.getInt("puntiP");
+			}
+			conn.close();
+			return punti;
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
